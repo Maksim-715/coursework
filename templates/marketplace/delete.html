@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% block content %}<div class="panel narrow"><h1>Удалить публикацию?</h1><p>{{ obj }}</p><p>Восстановить публикацию после удаления будет нельзя.</p><form method="post">{% csrf_token %}<button class="button danger">Удалить</button> <a href="{% url 'dashboard' %}">Отмена</a></form></div>{% endblock %}
