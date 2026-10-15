@@ -1,1 +1,39 @@
-{% load static %}<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{% block title %}Смена — работа объединяет{% endblock %}</title><link rel="stylesheet" href="{% static 'style.css' %}"></head><body><header><a class="brand" href="{% url 'home' %}"><span class="brand-icon">с</span> смена<span class="brand-dot">.</span></a><nav><a href="{% url 'catalog' 'vacancies' %}">Найти работу</a><a href="{% url 'catalog' 'services' %}">Услуги</a>{% if user.role == 'employer' %}<a href="{% url 'catalog' 'staff' %}">Аренда персонала</a><a href="{% url 'catalog' 'resumes' %}">Специалисты</a>{% endif %}</nav><div class="account">{% if user.is_authenticated %}<a class="button small" href="{% url 'dashboard' %}">Личный кабинет ↗</a><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="text-button">Выйти</button></form>{% else %}<a href="{% url 'login' %}">Войти</a><a class="button small" href="{% url 'register' %}">Начать сейчас ↗</a>{% endif %}</div></header>{% if messages %}<div class="messages">{% for message in messages %}<div class="message {{ message.tags }}" role="status">{{ message }}</div>{% endfor %}</div>{% endif %}<main>{% block content %}{% endblock %}</main><footer><a class="brand" href="{% url 'home' %}">смена.</a><p>Работа, услуги и команды. В одном месте.</p><span>© {% now 'Y' %} Смена</span></footer></body></html>
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Смена — работа объединяет{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+<a class="skip-link" href="#main-content">К содержимому</a>
+<header>
+  <a class="brand" href="{% url 'home' %}"><span class="brand-icon">с</span> смена<span class="brand-dot">.</span></a>
+  <nav aria-label="Главное меню">
+    <a href="{% url 'catalog' 'vacancies' %}">Работа</a>
+    <a href="{% url 'catalog' 'services' %}">Услуги</a>
+    {% if user.role == 'employer' %}<a href="{% url 'catalog' 'staff' %}">Персонал</a><a href="{% url 'catalog' 'resumes' %}">Специалисты</a>{% endif %}
+  </nav>
+  <div class="account">
+    {% if user.is_authenticated %}
+      <a class="header-icon" href="{% url 'inbox' %}" aria-label="Сообщения">✉{% if unread_messages %}<span class="counter">{{ unread_messages }}</span>{% endif %}</a>
+      <a class="header-icon" href="{% url 'notifications' %}" aria-label="Уведомления"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg>{% if unread_notifications %}<span class="counter">{{ unread_notifications }}</span>{% endif %}</a>
+      <a class="button small" href="{% url 'dashboard' %}">Мой кабинет ↗</a>
+    {% else %}<a href="{% url 'login' %}">Войти</a><a class="button small" href="{% url 'register' %}">Начать сейчас ↗</a>{% endif %}
+  </div>
+</header>
+{% if user.is_authenticated %}
+<div class="workspace-nav" aria-label="Личный кабинет">
+  <a href="{% url 'dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}>Обзор</a>
+  <a href="{% url 'favorites' %}" {% if request.resolver_match.url_name == 'favorites' %}aria-current="page"{% endif %}>♡ Избранное</a>
+  <a href="{% url 'inbox' %}" {% if request.resolver_match.url_name == 'inbox' or request.resolver_match.url_name == 'conversation' %}aria-current="page"{% endif %}>Переписка</a>
+  <a href="{% url 'notifications' %}" {% if request.resolver_match.url_name == 'notifications' %}aria-current="page"{% endif %}>Уведомления</a>
+  <a href="{% url 'profile' %}">Мой профиль</a>
+  <a href="{% url 'account' %}" {% if request.resolver_match.url_name == 'account' %}aria-current="page"{% endif %}>Настройки</a>
+</div>
+{% endif %}
+{% if messages %}<div class="messages">{% for message in messages %}<div class="message {{ message.tags }}" role="status">{{ message }}</div>{% endfor %}</div>{% endif %}
+<main id="main-content">{% block content %}{% endblock %}</main>
+<footer><a class="brand" href="{% url 'home' %}">смена.</a><p>Работа, услуги и команды. В одном месте.</p><span>© {% now 'Y' %} Смена</span></footer>
+</body></html>

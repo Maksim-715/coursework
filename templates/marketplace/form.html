@@ -1,1 +1,9 @@
-{% extends 'base.html' %}{% block content %}<div class="form-layout"><div><div class="eyebrow">ВАШ СЛЕДУЮЩИЙ ШАГ</div><h1>{{ title }}</h1>{% if obj %}<p>{{ obj }}</p>{% endif %}<p>Новые возможности начинаются<br>с простых действий.</p><div class="form-star">✳</div></div><form method="post" class="form-card">{% csrf_token %}{{ form.as_p }}<button class="button" type="submit">Сохранить и продолжить ↗</button><a class="cancel" href="{% url 'dashboard' %}">Назад</a></form></div>{% endblock %}
+{% extends 'base.html' %}{% load static l10n %}
+{% block title %}{{ title }} · Смена{% endblock %}
+{% block content %}
+<div class="form-layout"><div><div class="eyebrow">ВАШ СЛЕДУЮЩИЙ ШАГ</div><h1>{{ title }}</h1>{% if obj %}<p>{{ obj }}</p>{% endif %}
+{% if quote_price %}<div class="quote panel"><span class="muted">Стоимость услуги</span><div class="price">{{ quote_price }} ₽</div><p>Цена фиксируется при отправке заказа. Заказ начнётся после подтверждения исполнителем.</p></div>{% elif quote_rate %}<div class="quote panel" data-rental-quote data-rate="{{ quote_rate|unlocalize }}"><span class="muted">Ставка за человека в день</span><div class="price">{{ quote_rate }} ₽</div><p>Итого за период: <b data-rental-total>выберите даты и количество</b></p><p class="muted">Обе даты включены в расчёт. Итоговая ставка сохраняется при отправке заявки.</p></div>{% else %}<p>Новые возможности начинаются<br>с простых действий.</p><div class="form-star">✳</div>{% endif %}
+{% if busy_dates %}<div class="notice"><b>Исполнитель занят в ближайшие 90 дней:</b><p>{{ busy_dates|join:', ' }}</p><small>Выберите другую дату или обсудите условия в переписке.</small></div>{% endif %}
+</div><form method="post" enctype="multipart/form-data" class="form-card">{% csrf_token %}{{ form.as_p }}<button class="button" type="submit">{{ submit_label|default:'Сохранить и продолжить' }} ↗</button><a class="cancel" href="{% url 'dashboard' %}">Назад</a></form></div>
+{% if quote_rate %}<script src="{% static 'forms.js' %}" defer></script>{% endif %}
+{% endblock %}

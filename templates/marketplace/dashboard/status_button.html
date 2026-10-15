@@ -1,0 +1,1 @@
+<form method="post" action="{% url 'status' status_kind item.pk %}">{% csrf_token %}<input type="hidden" name="status" value="{{ status_value }}"><button class="button secondary small">{{ button_label }}</button></form>

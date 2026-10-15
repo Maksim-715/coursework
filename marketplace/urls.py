@@ -1,10 +1,25 @@
 from django.urls import path
-from . import views
+from . import views, community_views as community, exports
 urlpatterns = [
     path('', views.home, name='home'),
+    path('account/', community.account, name='account'),
+    path('companies/<int:pk>/', views.company_detail, name='company_detail'),
+    path('favorites/', community.favorites, name='favorites'),
+    path('favorites/<str:kind>/<int:pk>/toggle/', community.favorite_toggle, name='favorite_toggle'),
+    path('favorites/<int:pk>/remove/', community.favorite_remove, name='favorite_remove'),
+    path('notifications/', community.notifications, name='notifications'),
+    path('notifications/read-all/', community.notifications_read_all, name='notifications_read_all'),
+    path('notifications/<int:pk>/read/', community.notification_read, name='notification_read'),
+    path('messages/', community.inbox, name='inbox'),
+    path('messages/start/<str:kind>/<int:pk>/', community.conversation_start, name='conversation_start'),
+    path('messages/<int:pk>/', community.conversation, name='conversation'),
+    path('export/applications.csv', exports.applications_csv, name='applications_csv'),
+    path('export/calendar.ics', exports.calendar_ics, name='calendar_ics'),
+    path('archive/<str:kind>/<int:pk>/', views.archive, name='archive'),
     path('register/', views.register, name='register'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('profile/', views.profile, name='profile'),
+    path('portfolio/<int:pk>/download/', views.portfolio_download, name='portfolio_download'),
     path('catalog/<str:kind>/', views.catalog, name='catalog'),
     path('catalog/<str:kind>/<int:pk>/', views.detail, name='detail'),
     path('create/<str:kind>/', views.edit, name='create'),
