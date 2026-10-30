@@ -1,1 +1,9 @@
-<article class="card"><div class="card-topline"><span class="company-avatar">{{ item.company.name|first }}</span><span class="badge {% if item.kind == 'day' %}green{% endif %}">{{ item.get_kind_display }}</span></div><div class="muted">{{ item.company.name }}</div><h3><a href="{% url 'detail' 'vacancies' item.pk %}">{{ item.title }}</a></h3><div class="price">{{ item.salary }} ₽ <small>/ {% if item.kind == 'day' %}смена{% else %}месяц{% endif %}</small></div><p>{{ item.format }}</p><a class="card-link" href="{% url 'detail' 'vacancies' item.pk %}">Подробнее <span>↗</span></a></article>
+<article class="card">
+  <div class="card-topline"><span class="company-avatar">{{ item.company.name|first }}</span><span class="badge {% if item.kind == 'day' %}green{% endif %}">{{ item.get_kind_display }}</span></div>
+  <a class="muted" href="{% url 'company_detail' item.company_id %}">{{ item.company.name }}</a>
+  <h3><a href="{% url 'detail' 'vacancies' item.pk %}">{{ item.title }}</a></h3>
+  <div class="price">{{ item.salary }} ₽ <small>/ {% if item.kind == 'day' %}смена{% else %}месяц{% endif %}</small></div>
+  <p>{{ item.format }}{% if item.city %} · {{ item.city }}{% endif %}</p>
+  {% if item.is_favorite %}<span class="badge">♥ В избранном</span>{% endif %}
+  <a class="card-link" href="{% url 'detail' 'vacancies' item.pk %}">Подробнее <span>↗</span></a>
+</article>
