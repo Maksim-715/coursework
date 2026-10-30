@@ -1,6 +1,16 @@
 from django.urls import path
-from . import views, community_views as community, exports
+from . import views, community_views as community, exports, interview_views as interviews
 urlpatterns = [
+    path('interviews/<int:pk>/calendar.ics', exports.interview_ics, name='interview_ics'),
+    path('interviews/', interviews.interviews, name='interviews'),
+    path('interviews/from-invitation/<int:invitation_pk>/', interviews.interview_edit, name='interview_from_invitation'),
+    path('interviews/new/<int:resume_pk>/', interviews.interview_edit, name='interview_create'),
+    path('interviews/<int:pk>/', interviews.interview_detail, name='interview_detail'),
+    path('interviews/<int:pk>/edit/', interviews.interview_edit, name='interview_edit'),
+    path('interviews/<int:pk>/status/', interviews.interview_status, name='interview_status'),
+    path('practice/new/', interviews.practice_create, name='practice_create'),
+    path('practice/', interviews.practice_history, name='practice_history'),
+    path('practice/<int:pk>/', interviews.practice_detail, name='practice_detail'),
     path('', views.home, name='home'),
     path('account/', community.account, name='account'),
     path('companies/<int:pk>/', views.company_detail, name='company_detail'),

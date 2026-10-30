@@ -1,0 +1,4 @@
+{% extends 'base.html' %}
+{% block title %}История тренировок · Смена{% endblock %}
+{% block content %}<section class="page-heading"><a class="link" href="{% url 'interviews' %}">← Собеседования</a><h1>История тренировок</h1><a class="button" href="{% url 'practice_create' %}">Новая тренировка</a></section>
+<section>{% for item in items %}<article class="list-row"><div><h2><a href="{% url 'practice_detail' item.pk %}">{{ item.position }}</a></h2><p>{{ item.get_topic_display }} · Ответов: {{ item.answered_count }} из 5 · {{ item.created_at|date:'d.m.Y H:i' }}</p></div><span class="badge">{% if item.completed_at %}Завершена{% else %}Черновик{% endif %}</span></article>{% empty %}<div class="empty">Здесь появятся ваши тренировки.</div>{% endfor %}{% include 'marketplace/pagination.html' %}</section>{% endblock %}

@@ -5,7 +5,7 @@ from django.utils.html import format_html
 from .forms import PortfolioForm
 from .models import (User, Company, Resume, Vacancy, Application, Invitation, Service,
                      Order, Review, Availability, StaffOffer, Rental, PortfolioProject,
-                     Favorite, Notification, Conversation, Message)
+                     Favorite, Notification, Conversation, Message, Interview)
 
 
 @admin.register(User)
@@ -134,3 +134,14 @@ admin.site.register([Invitation, Review, Availability, Favorite, Conversation, M
 admin.site.site_header = 'Смена · управление платформой'
 admin.site.site_title = 'Смена'
 admin.site.index_title = 'Обзор платформы'
+
+
+@admin.register(Interview)
+class InterviewAdmin(admin.ModelAdmin):
+    list_display = ['title', 'company', 'worker', 'starts_at', 'status']
+    list_filter = ['status', 'format', 'starts_at']
+    search_fields = ['title', 'company__name', 'worker__email']
+    readonly_fields = [field.name for field in Interview._meta.fields]
+
+    def has_add_permission(self, request):
+        return False

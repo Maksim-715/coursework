@@ -26,6 +26,7 @@
 {% if user.is_authenticated %}
 <div class="workspace-nav" aria-label="Личный кабинет">
   <a href="{% url 'dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}>Обзор</a>
+  <a href="{% url 'interviews' %}" {% if request.resolver_match.url_name == 'interviews' or request.resolver_match.url_name == 'interview_detail' or request.resolver_match.url_name == 'interview_edit' or request.resolver_match.url_name == 'interview_create' or request.resolver_match.url_name == 'interview_from_invitation' or request.resolver_match.url_name == 'practice_create' or request.resolver_match.url_name == 'practice_detail' or request.resolver_match.url_name == 'practice_history' %}aria-current="page"{% endif %}>Собеседования</a>
   <a href="{% url 'favorites' %}" {% if request.resolver_match.url_name == 'favorites' %}aria-current="page"{% endif %}>♡ Избранное</a>
   <a href="{% url 'inbox' %}" {% if request.resolver_match.url_name == 'inbox' or request.resolver_match.url_name == 'conversation' %}aria-current="page"{% endif %}>Переписка</a>
   <a href="{% url 'notifications' %}" {% if request.resolver_match.url_name == 'notifications' %}aria-current="page"{% endif %}>Уведомления</a>

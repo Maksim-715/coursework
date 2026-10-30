@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Собеседования · Смена{% endblock %}
+{% block content %}
+<section class="page-heading"><h1>Собеседования</h1><p>Встречи с работодателями и подготовка к следующему шагу.</p>
+<a class="button" href="{% url 'practice_create' %}">Пройти тренировочное интервью ↗</a>
+<a class="button secondary" href="{% url 'practice_history' %}">История тренировок</a>
+{% if user.role == 'employer' %}<p>Назначьте встречу из <a class="link" href="{% url 'catalog' 'resumes' %}">резюме кандидата</a> или входящего отклика.</p>{% endif %}</section>
+<div class="interview-overview"><div class="panel"><span class="muted">Предстоящие встречи</span><strong>{{ upcoming_count }}</strong></div><div class="panel"><span class="muted">Ожидают подтверждения</span><strong>{{ pending_count }}</strong></div><a class="panel practice-promo" href="{% url 'practice_create' %}"><span class="eyebrow">ПОДГОТОВКА</span><h2>Пять вопросов до уверенного ответа</h2><span>Потренироваться →</span></a></div>
+<section><nav class="tabs" aria-label="Период встреч"><a href="?tab=upcoming" {% if tab == 'upcoming' %}aria-current="page"{% endif %}>Предстоящие</a><a href="?tab=history" {% if tab == 'history' %}aria-current="page"{% endif %}>История</a><a href="?tab=all" {% if tab == 'all' %}aria-current="page"{% endif %}>Все</a></nav>
+<form method="get" class="panel interview-filter"><input type="hidden" name="tab" value="{{ tab }}"><div><label for="interview-search">Поиск встреч</label><input id="interview-search" name="q" value="{{ q }}" placeholder="Тема, компания или кандидат"></div><div><label for="status">Статус</label><select name="status" id="status"><option value="">Все встречи</option>{% for value,label in statuses %}<option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div><button class="button small">Показать</button></form>
+{% for item in items %}<article class="list-row"><div><h2><a href="{% url 'interview_detail' item.pk %}">{{ item.title }}</a></h2><p>{{ item.company }} · {{ item.worker }}</p><p>{{ item.starts_at|date:'d.m.Y H:i' }} · {{ item.duration }} мин · {{ item.get_format_display }}</p><span class="badge">{{ item.get_status_display }}</span></div><a class="button secondary" href="{% url 'interview_detail' item.pk %}">Открыть</a></article>{% empty %}<div class="empty">Собеседований пока нет. Начните с тренировки или договоритесь о встрече.</div>{% endfor %}
+{% include 'marketplace/pagination.html' %}</section>
+{% if practices %}<section><h2>Последние тренировки</h2>{% for item in practices %}<article class="list-row"><a class="link" href="{% url 'practice_detail' item.pk %}">{{ item.position }} · {{ item.get_topic_display }}</a><span>{% if item.completed_at %}Завершена{% else %}Черновик{% endif %}</span></article>{% endfor %}</section>{% endif %}
+{% endblock %}
