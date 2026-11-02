@@ -19,7 +19,7 @@ from .forms import (RegisterForm, CompanyForm, ResumeForm, VacancyForm, ServiceF
                     InvitationForm, ApplicationForm, ReviewForm, AvailabilityForm,
                     OrderForm, StaffOfferForm, RentalForm, PortfolioForm, SearchForm)
 from .models import (Company, Resume, Vacancy, Service, Invitation, Application,
-                     Review, Availability, Order, StaffOffer, Rental, PortfolioProject, Favorite, User, Category)
+                     Review, Availability, Order, StaffOffer, Rental, PortfolioProject, Favorite, User, Category, Interview)
 from .selectors import check_catalog_access, get_listing, FAVORITE_FIELDS
 from .services import notify, move_order, move_rental, move_application, respond_invitation, peak_reserved
 
@@ -90,10 +90,14 @@ def calendar_context(user, params):
     days = {item.date: item for item in Availability.objects.filter(worker=user, date__year=year, date__month=month)}
     booked = set(Order.objects.filter(service__owner=user, date__year=year, date__month=month,
                                      status__in=['accepted', 'working', 'done']).values_list('date', flat=True))
+    interview_days = {}
+    for item in Interview.objects.filter(worker=user, starts_at__date__year=year, starts_at__date__month=month,
+                                         status__in=['pending', 'confirmed']).order_by('starts_at'):
+        interview_days.setdefault(timezone.localtime(item.starts_at).date(), []).append(item)
     names = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
     return {
         'calendar_weeks': [[{'day': day.day, 'in_month': day.month == month, 'today': day == today,
-                            'availability': days.get(day), 'booked': day in booked}
+                            'availability': days.get(day), 'booked': day in booked, 'interviews': interview_days.get(day, [])}
                            for day in week] for week in calendar.Calendar().monthdatescalendar(year, month)],
         'weekdays': ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
         'calendar_title': f'{names[month-1]} {year}',
@@ -108,7 +112,9 @@ def dashboard(request):
     is_employer = user.role == 'employer'
     orders = Order.objects.filter(customer=user) if is_employer else Order.objects.filter(service__owner=user)
     applications = Application.objects.filter(vacancy__company__owner=user) if is_employer else Application.objects.filter(worker=user)
+    from .interview_services import participants
     context = {
+        'upcoming_interviews': Interview.objects.filter(participants(user), status__in=['pending', 'confirmed'], starts_at__gte=timezone.now()).select_related('company', 'worker')[:3],
         'applications': applications.select_related('worker', 'worker__resume', 'vacancy__company').order_by('-created_at'),
         'orders': orders.select_related('service__owner', 'customer', 'review').order_by('-created_at'),
         'application_statuses': [(v, label) for v, label in Application.Status.choices if v != 'withdrawn'],

@@ -24,7 +24,7 @@ def get_listing(user, kind, pk):
     if kind == 'resumes':
         visible = Q(is_visible=True)
         if user.is_authenticated:
-            visible |= Q(owner=user) | Q(owner__application__vacancy__company__owner=user) | Q(owner__invitation__company__owner=user)
+            visible |= Q(owner=user) | Q(owner__application__vacancy__company__owner=user) | Q(owner__invitation__company__owner=user) | Q(owner__interviews__company__owner=user)
     else:
         visible = Q(is_active=True)
         if user.is_authenticated:

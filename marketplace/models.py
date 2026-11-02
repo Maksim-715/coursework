@@ -270,3 +270,85 @@ class Message(models.Model):
     class Meta:
         ordering = ['created_at', 'pk']
         indexes = [models.Index(fields=['conversation', 'is_read'])]
+
+
+class Interview(models.Model):
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Ожидает подтверждения'
+        CONFIRMED = 'confirmed', 'Подтверждено'
+        DECLINED = 'declined', 'Отклонено кандидатом'
+        CANCELLED = 'cancelled', 'Отменено'
+        COMPLETED = 'completed', 'Завершено'
+
+    class Format(models.TextChoices):
+        ONLINE = 'online', 'Онлайн'
+        OFFICE = 'office', 'В офисе'
+        PHONE = 'phone', 'По телефону'
+
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='interviews')
+    worker = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='interviews')
+    vacancy = models.ForeignKey(Vacancy, on_delete=models.SET_NULL, null=True, blank=True)
+    title = models.CharField('Тема собеседования', max_length=160)
+    starts_at = models.DateTimeField('Начало')
+    duration = models.PositiveSmallIntegerField('Длительность, минут', default=60, validators=[MinValueValidator(15), MaxValueValidator(240)])
+    format = models.CharField('Формат', max_length=10, choices=Format.choices, default=Format.ONLINE)
+    location = models.CharField('Адрес или телефон', max_length=250, blank=True)
+    meeting_url = models.URLField('Ссылка на встречу', blank=True)
+    description = models.TextField('Что подготовить', blank=True)
+    status = models.CharField(max_length=12, choices=Status.choices, default=Status.PENDING)
+    result = models.TextField('Итоги (видны обоим участникам)', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['starts_at', 'pk']
+
+    @property
+    def ends_at(self):
+        from datetime import timedelta
+        return self.starts_at + timedelta(minutes=self.duration)
+
+    @property
+    def is_active(self):
+        return self.status in [self.Status.PENDING, self.Status.CONFIRMED]
+
+    def __str__(self):
+        return self.title
+
+
+class PracticeInterview(models.Model):
+    class Topic(models.TextChoices):
+        GENERAL = 'general', 'Знакомство и мотивация'
+        BEHAVIORAL = 'behavioral', 'Опыт и рабочие ситуации'
+        IT = 'it', 'IT и технологии'
+
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='practice_interviews')
+    topic = models.CharField('Тема тренировки', max_length=20, choices=Topic.choices)
+    position = models.CharField('Желаемая должность', max_length=160)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at', '-pk']
+
+
+class PracticeAnswer(models.Model):
+    session = models.ForeignKey(PracticeInterview, on_delete=models.CASCADE, related_name='answers')
+    number = models.PositiveSmallIntegerField()
+    question = models.TextField()
+    hint = models.TextField()
+    answer = models.TextField('Ваш ответ', blank=True)
+
+    class Meta:
+        ordering = ['number']
+        constraints = [models.UniqueConstraint(fields=['session', 'number'], name='unique_practice_question')]
+
+
+class InterviewEvent(models.Model):
+    interview = models.ForeignKey(Interview, on_delete=models.CASCADE, related_name='events')
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    title = models.CharField(max_length=120)
+    detail = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at', '-pk']

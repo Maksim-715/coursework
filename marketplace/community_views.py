@@ -12,7 +12,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from .forms import AccountForm, MessageForm
-from .models import Favorite, Notification, Conversation, Message, Order, Rental, Application, Invitation
+from .models import Favorite, Notification, Conversation, Message, Order, Rental, Application, Invitation, Interview
 from .selectors import get_listing, FAVORITE_FIELDS
 from .services import notify
 
@@ -95,7 +95,12 @@ def conversation_scope(user):
 @login_required
 @require_POST
 def conversation_start(request, kind, pk):
-    if kind == 'orders':
+    if kind == 'interviews':
+        from .interview_services import participants
+        obj = get_object_or_404(Interview.objects.filter(participants(request.user)).select_related('company__owner', 'worker'), pk=pk)
+        recipient = obj.company.owner if obj.worker_id == request.user.pk else obj.worker
+        subject = obj.title
+    elif kind == 'orders':
         obj = get_object_or_404(Order.objects.filter(Q(customer=request.user) | Q(service__owner=request.user)).select_related('service__owner', 'customer'), pk=pk)
         recipient = obj.service.owner if obj.customer_id == request.user.pk else obj.customer
         subject = obj.service.title

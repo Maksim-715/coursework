@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Тренировка: {{ item.position }} · Смена{% endblock %}
+{% block content %}
+<section class="page-heading"><a class="link" href="{% url 'practice_history' %}">← Мои тренировки</a><div class="eyebrow">{{ item.get_topic_display }}</div><h1>{{ item.position }}</h1>
+{% if item.completed_at %}<p>Тренировка завершена. Посмотрите, что уже получилось и что можно усилить.</p>{% else %}<p>Отвечайте как на настоящем интервью. На каждый вопрос отведите 2–3 минуты.</p>{% endif %}</section>
+{% if not item.completed_at %}
+<div class="practice-layout"><aside class="panel practice-sidebar"><h2>Ваш прогресс</h2><p>{{ answered }} из {{ answers|length }} ответов сохранено</p><progress max="100" value="{{ progress }}" aria-label="Прогресс тренировки">{{ progress }}%</progress>
+<nav aria-label="Вопросы тренировки" class="practice-steps">{% for answer in answers %}<a href="?step={{ answer.number }}" {% if step == answer.number %}aria-current="step"{% endif %}><span>{% if answer.answer %}✓{% else %}{{ answer.number }}{% endif %}</span><span>{{ answer.question }}</span></a>{% endfor %}</nav><p class="muted">Переход по номерам не сохраняет изменения. Используйте кнопку под ответом. Ответы видны только вам.</p></aside>
+<article class="panel practice-question"><span class="eyebrow">ВОПРОС {{ step }} / {{ answers|length }}</span><h2>{{ current.question }}</h2>
+<form method="post">{% csrf_token %}<label for="answer_{{ current.pk }}">Ваш ответ</label><textarea id="answer_{{ current.pk }}" name="answer_{{ current.pk }}" rows="10" maxlength="10000" placeholder="Вспомните конкретную ситуацию: какая была задача, что сделали вы и чем всё закончилось.">{{ current.answer }}</textarea>
+<details class="practice-hint"><summary>Нужна подсказка?</summary><p>{{ current.hint }}</p></details>
+<div class="practice-actions"><button class="button secondary">Сохранить и продолжить позже</button>{% if step < answers|length %}<button class="button" name="next" value="1">Сохранить и далее →</button>{% else %}<button class="button" name="finish" value="1">Завершить и разобрать ответы →</button>{% endif %}</div></form></article></div>
+{% else %}
+<div class="interview-overview"><div class="panel"><span class="muted">Пройдено вопросов</span><strong>{{ answered }} / {{ answers|length }}</strong></div><div class="panel"><span class="muted">Слов в ответах</span><strong>{{ word_count }}</strong><small>Объём не является оценкой качества.</small></div><div class="panel"><span class="muted">Следующий шаг</span><p>Выберите один ответ, который хотите улучшить, и повторите тренировку.</p><a class="link" href="{% url 'practice_create' %}">Новая попытка ↗</a></div></div>
+<section class="practice-review"><h2>Разбор для самопроверки</h2><p class="muted">Подсказки подготовлены заранее. Оценку содержания и соответствия вакансии вы проводите самостоятельно.</p>
+{% for answer in answers %}<article class="panel"><h3>{{ answer.number }}. {{ answer.question }}</h3><div class="practice-review-grid"><div><span class="eyebrow">ВАШ ОТВЕТ</span>{{ answer.answer|linebreaks }}</div><div class="practice-review-hint"><b>Что проверить</b><p>{{ answer.hint }}</p><p class="muted">Есть конкретный пример? Понятен ваш личный вклад? Назван результат?</p></div></div></article>{% endfor %}</section>
+<div class="practice-actions"><a class="button" href="{% url 'practice_create' %}">Пройти ещё раз</a><a class="button secondary" href="{% url 'interviews' %}">К собеседованиям</a></div>
+{% endif %}
+{% endblock %}

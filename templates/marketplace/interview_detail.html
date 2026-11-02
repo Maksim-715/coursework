@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}{{ item.title }} · Смена{% endblock %}
+{% block content %}
+<section class="page-heading"><a class="link" href="{% url 'interviews' %}">← Собеседования</a><h1>{{ item.title }}</h1><span class="badge">{{ item.get_status_display }}</span></section>
+<div class="detail-layout"><article class="panel prose"><h2>{{ item.company }} · {{ item.worker }}</h2>
+<p>{{ item.starts_at|date:'d.m.Y H:i' }} — {{ item.ends_at|date:'H:i' }} ({{ item.duration }} мин). Часовой пояс: {% now 'e' %}.</p>
+<p>{{ item.get_format_display }}</p>{% if item.location %}<p>{{ item.location }}</p>{% endif %}
+{% if item.meeting_url %}<p><a class="link" href="{{ item.meeting_url }}" target="_blank" rel="noopener noreferrer">Подключиться к встрече ↗</a></p>{% endif %}
+{% if item.vacancy %}<p>Вакансия: {{ item.vacancy }}</p>{% endif %}
+{% if is_past and item.is_active %}<div class="notice">Время встречи прошло. {% if user.pk == item.company.owner_id %}Подведите итоги подтверждённой встречи или согласуйте новую дату.{% else %}Если встреча не состоялась, обсудите новую дату с работодателем.{% endif %}</div>{% endif %}<h3>Подготовка</h3>{{ item.description|default:'Дополнительных требований нет.'|linebreaks }}
+{% if item.result %}<h3>Итоги</h3>{{ item.result|linebreaks }}{% endif %}</article>
+<aside class="panel"><h2>Действия</h2><a class="button secondary" href="{% url 'interview_ics' item.pk %}">Скачать событие .ics ↓</a><form method="post" action="{% url 'conversation_start' 'interviews' item.pk %}">{% csrf_token %}<button class="button secondary">Обсудить встречу ✉</button></form>
+{% if item.is_active %}
+{% if user.pk == item.worker_id and item.status == 'pending' %}
+<form method="post" action="{% url 'interview_status' item.pk %}">{% csrf_token %}{% if can_confirm %}<button class="button" name="status" value="confirmed">Подтвердить</button>{% endif %}</form><details class="meeting-cancel"><summary>Отклонить приглашение</summary><form method="post" action="{% url 'interview_status' item.pk %}">{% csrf_token %}<label for="decline-reason">Причина (необязательно)</label><textarea id="decline-reason" name="reason" maxlength="2000" rows="3"></textarea><button class="button secondary" name="status" value="declined">Отклонить приглашение</button></form></details>
+{% endif %}
+{% if user.pk == item.company.owner_id %}<a class="button secondary" href="{% url 'interview_edit' item.pk %}">Изменить / перенести</a><p class="muted">После изменения потребуется новое подтверждение кандидата.</p>{% endif %}
+<details class="meeting-cancel"><summary>Отменить встречу</summary><form method="post" action="{% url 'interview_status' item.pk %}">{% csrf_token %}<p>Участник получит уведомление. Отменённую встречу нельзя восстановить.</p><label for="cancel-reason">Причина (необязательно, видна обоим)</label><textarea id="cancel-reason" name="reason" rows="3" maxlength="2000"></textarea><button class="button secondary" name="status" value="cancelled">Подтвердить отмену</button></form></details>
+{% if user.pk == item.company.owner_id and can_complete %}<form method="post" action="{% url 'interview_status' item.pk %}">{% csrf_token %}{{ result_form.as_p }}<button class="button" name="status" value="completed">Завершить и сохранить итоги</button></form>{% endif %}
+{% endif %}
+<a class="button secondary" href="{% url 'practice_create' %}">Подготовиться к интервью</a>
+</aside></div><section class="meeting-timeline"><h2>История встречи</h2>{% for event in events %}<article class="list-row"><div><h3>{{ event.title }}</h3>{% if event.detail %}{{ event.detail|linebreaks }}{% endif %}<span class="muted">{{ event.actor|default:'Участник' }}</span></div><time datetime="{{ event.created_at|date:'c' }}">{{ event.created_at|date:'d.m.Y H:i' }}</time></article>{% empty %}<p class="muted">Новые изменения и ответы участников будут сохранены здесь.</p>{% endfor %}</section>
+{% endblock %}
